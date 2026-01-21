@@ -3,241 +3,118 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Õpimäng (Quizlet + game)</title>
+  <title>Õpimäng (Quizlet + Runner)</title>
   <style>
-    :root {
-      --bg: #0b1020;
-      --card: #111a33;
-      --muted: #9fb0d0;
-      --text: #e9eeff;
-      --accent: #7aa2ff;
-      --good: #2ecc71;
-      --bad: #ff5c7a;
-      --line: rgba(255,255,255,0.10);
+    :root{
+      --bg:#0b1020; --card:#111a33; --muted:#9fb0d0; --text:#e9eeff;
+      --accent:#7aa2ff; --good:#2ecc71; --bad:#ff5c7a; --line:rgba(255,255,255,.10);
     }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 20% 0%, #18234a 0%, var(--bg) 60%);
-      color: var(--text);
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
+      background:radial-gradient(1200px 600px at 20% 0%, #18234a 0%, var(--bg) 60%);
     }
-
-    header {
-      padding: 20px 18px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(0,0,0,0.25);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    header{
+      padding:20px 18px; border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.25); backdrop-filter: blur(10px);
+      position:sticky; top:0; z-index:10;
     }
+    .wrap{max-width:980px; margin:0 auto; padding:18px}
+    h1{font-size:18px; margin:0 0 6px 0; font-weight:700}
+    .sub{margin:0; color:var(--muted); font-size:13px}
 
-    .wrap {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 18px;
+    .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:16px}
+    @media (min-width: 900px){ .grid{grid-template-columns:1.1fr .9fr; align-items:start} }
+
+    .card{
+      background:rgba(17,26,51,.75); border:1px solid var(--line);
+      border-radius:14px; padding:14px; box-shadow:0 12px 30px rgba(0,0,0,.25);
     }
+    .row{display:grid; grid-template-columns:1fr 1fr auto; gap:10px; margin-top:10px}
 
-    h1 {
-      font-size: 18px;
-      margin: 0 0 6px 0;
-      font-weight: 700;
-      letter-spacing: 0.2px;
+    input, textarea{
+      width:100%; background:rgba(0,0,0,.25); color:var(--text);
+      border:1px solid var(--line); border-radius:10px; padding:10px; outline:none;
     }
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
+    textarea{min-height:80px; resize:vertical}
+
+    button{
+      background:rgba(122,162,255,.15);
+      border:1px solid rgba(122,162,255,.35);
+      color:var(--text); padding:10px 12px; border-radius:10px;
+      cursor:pointer; font-weight:600;
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      margin-top: 16px;
+    button:hover{filter:brightness(1.05)}
+    button:active{transform:translateY(1px)}
+    .btn-good{background:rgba(46,204,113,.14); border-color:rgba(46,204,113,.35)}
+    .btn-bad{background:rgba(255,92,122,.12); border-color:rgba(255,92,122,.35)}
+    .tiny{font-size:12px; color:var(--muted)}
+    .pill{
+      display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line); background:rgba(0,0,0,.18); font-size:12px; color:var(--muted);
     }
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px}
 
-    @media (min-width: 900px) {
-      .grid {
-        grid-template-columns: 1.1fr 0.9fr;
-        align-items: start;
-      }
+    .list{margin-top:12px; border-top:1px solid var(--line); padding-top:12px}
+    .qa-item{
+      display:grid; grid-template-columns:1fr 1fr auto; gap:10px;
+      padding:10px; border:1px solid var(--line); border-radius:12px;
+      margin-bottom:10px; background:rgba(0,0,0,.18);
     }
+    .qa-item b{display:block; font-size:12px; color:var(--muted); margin-bottom:4px}
+    .qa-item .val{white-space:pre-wrap}
 
-    .card {
-      background: rgba(17, 26, 51, 0.75);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    .hidden{display:none !important}
+
+    .game-top{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    .bar{
+      height:10px; background:rgba(255,255,255,.08);
+      border-radius:999px; overflow:hidden; border:1px solid var(--line);
     }
+    .bar > div{height:100%; width:0%; background:rgba(122,162,255,.9); transition:width 250ms ease}
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 10px;
-      margin-top: 10px;
+    .game-area{
+      margin-top:12px; border-radius:14px; border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.30));
+      padding:14px;
     }
+    .question{font-size:16px; font-weight:800; margin:0 0 10px 0}
 
-    input, textarea, select {
-      width: 100%;
-      background: rgba(0,0,0,0.25);
-      color: var(--text);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 10px;
-      outline: none;
+    .lane-choices{
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;
+      margin-top:10px;
     }
-
-    textarea { min-height: 80px; resize: vertical; }
-
-    button {
-      background: rgba(122, 162, 255, 0.15);
-      border: 1px solid rgba(122, 162, 255, 0.35);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
+    .lane-btn{
+      text-align:center; padding:10px 12px;
+      background:rgba(0,0,0,.22); border:1px solid var(--line); border-radius:12px;
+      user-select:none;
+      min-height:44px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px;
     }
-    button:hover { filter: brightness(1.05); }
-    button:active { transform: translateY(1px); }
+    .lane-btn.active{border-color:rgba(122,162,255,.8); box-shadow:0 0 0 2px rgba(122,162,255,.15) inset}
 
-    .btn-good {
-      background: rgba(46, 204, 113, 0.14);
-      border-color: rgba(46, 204, 113, 0.35);
+    .toast{margin-top:10px; font-size:13px; color:var(--muted); min-height:20px}
+    canvas{
+      width:100%;
+      height:320px;
+      display:block;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
     }
-    .btn-bad {
-      background: rgba(255, 92, 122, 0.12);
-      border-color: rgba(255, 92, 122, 0.35);
-    }
-
-    .tiny {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .pill {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,0.18);
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-top: 12px;
-    }
-
-    .list {
-      margin-top: 12px;
-      border-top: 1px solid var(--line);
-      padding-top: 12px;
-    }
-
-    .qa-item {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 10px;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      margin-bottom: 10px;
-      background: rgba(0,0,0,0.18);
-    }
-    .qa-item b { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .qa-item .val { white-space: pre-wrap; }
-
-    .game-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .bar {
-      height: 10px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-    }
-    .bar > div {
-      height: 100%;
-      width: 0%;
-      background: rgba(122, 162, 255, 0.9);
-      transition: width 250ms ease;
-    }
-
-    .game-area {
-      margin-top: 12px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.30));
-      padding: 14px;
-    }
-
-    .question {
-      font-size: 16px;
-      font-weight: 700;
-      margin: 0 0 10px 0;
-    }
-
-    .choices {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .choice {
-      text-align: left;
-      padding: 10px 12px;
-      background: rgba(0,0,0,0.22);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-    }
-
-    .choice.good { border-color: rgba(46, 204, 113, 0.55); background: rgba(46, 204, 113, 0.12); }
-    .choice.bad  { border-color: rgba(255, 92, 122, 0.55); background: rgba(255, 92, 122, 0.10); }
-
-    .hidden { display: none !important; }
-
-    .toast {
-      margin-top: 10px;
-      font-size: 13px;
-      color: var(--muted);
-      min-height: 20px;
-    }
-
-    .kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
-      border: 1px solid var(--line);
-      border-bottom-width: 2px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      background: rgba(0,0,0,0.20);
-      color: var(--muted);
+    .kbd{
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px; border:1px solid var(--line); border-bottom-width:2px;
+      padding:2px 6px; border-radius:8px; background:rgba(0,0,0,.20); color:var(--muted);
     }
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <h1>Õpimäng (Quizlet + mini-mäng)</h1>
-      <p class="sub">Lisa oma küsimused/vastused → salvesta → mängi. Kõik jääb sinu brauserisse (localStorage).</p>
+      <h1>Õpimäng (Quizlet + Runner)</h1>
+      <p class="sub">Lisa oma küsimused/vastused → salvesta → mängi 3-rajalisena (Subway Surfers vibe).</p>
     </div>
   </header>
 
@@ -247,14 +124,12 @@
       <!-- BUILDER -->
       <section class="card" id="builderCard">
         <div class="game-top">
-          <div>
-            <div class="pill">📦 Pakk: <span id="deckNameLabel">Minu pakk</span></div>
-          </div>
+          <div class="pill">📦 Pakk: <span id="deckNameLabel">Minu pakk</span></div>
           <div class="toolbar">
-            <input id="deckName" type="text" placeholder="Paki nimi (nt 'Võrgud KT')" value="Minu pakk" />
+            <input id="deckName" type="text" placeholder="Paki nimi" value="Minu pakk" />
             <button class="btn-good" id="saveDeckBtn">Salvesta</button>
             <button id="loadDeckBtn">Laadi</button>
-            <button class="btn-bad" id="deleteDeckBtn">Kustuta pakk</button>
+            <button class="btn-bad" id="deleteDeckBtn">Kustuta</button>
           </div>
         </div>
 
@@ -273,12 +148,10 @@
         <div class="toolbar">
           <button id="importBtn">Impordi (Q|A)</button>
           <button id="exportBtn">Ekspordi</button>
-          <button class="btn-good" id="startGameBtn">Mängi</button>
+          <button class="btn-good" id="startGameBtn">Mängi (Runner)</button>
         </div>
 
-        <p class="tiny">
-          Importi formaat: iga rida on <span class="kbd">küsimus | vastus</span>
-        </p>
+        <p class="tiny">Importi formaat: iga rida on <span class="kbd">küsimus | vastus</span></p>
       </section>
 
       <!-- GAME -->
@@ -286,7 +159,7 @@
         <div class="game-top">
           <div class="pill">❤️ HP: <span id="hpLabel">3</span></div>
           <div class="pill">⭐ Score: <span id="scoreLabel">0</span></div>
-          <div class="pill">✅ Õige järjest: <span id="streakLabel">0</span></div>
+          <div class="pill">✅ Streak: <span id="streakLabel">0</span></div>
         </div>
 
         <div style="margin-top:12px;">
@@ -296,12 +169,18 @@
 
         <div class="game-area">
           <p class="question" id="questionText">Küsimus siia…</p>
-          <div class="choices" id="choices"></div>
+
+          <canvas id="gameCanvas" width="900" height="320"></canvas>
+
+          <div class="lane-choices" id="laneChoices"></div>
+
           <div class="toast" id="toast"></div>
+          <div class="tiny" style="margin-top:6px;">
+            Juhtimine: <span class="kbd">←</span>/<span class="kbd">→</span> või <span class="kbd">A</span>/<span class="kbd">D</span>
+          </div>
         </div>
 
         <div class="toolbar">
-          <button id="nextBtn">Järgmine</button>
           <button class="btn-bad" id="quitBtn">Välju</button>
         </div>
       </section>
@@ -311,28 +190,23 @@
 
   <script>
     // -------------------------
-    // Storage helpers
+    // Storage
     // -------------------------
-    const STORAGE_KEY = "opimang_decks_v1";
+    const STORAGE_KEY = "opimang_decks_v2";
 
     function readAllDecks() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      } catch {
-        return {};
-      }
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+      catch { return {}; }
     }
-
     function writeAllDecks(decks) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
     }
 
     // -------------------------
-    // State
+    // State (builder)
     // -------------------------
     let deckName = "Minu pakk";
-    let cards = []; // {q, a}
-    let game = null;
+    let cards = []; // {q,a}
 
     // -------------------------
     // DOM
@@ -360,26 +234,39 @@
     const progressFill = document.getElementById("progressFill");
 
     const questionText = document.getElementById("questionText");
-    const choicesEl = document.getElementById("choices");
     const toast = document.getElementById("toast");
-    const nextBtn = document.getElementById("nextBtn");
     const quitBtn = document.getElementById("quitBtn");
 
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const laneChoicesEl = document.getElementById("laneChoices");
+
     // -------------------------
-    // UI render
+    // Helpers
     // -------------------------
-    function syncDeckName() {
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+    function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+
+    // -------------------------
+    // Builder UI
+    // -------------------------
+    function syncDeckName(){
       deckName = (deckNameInput.value || "Minu pakk").trim();
       deckNameLabel.textContent = deckName;
     }
 
-    function renderList() {
+    function renderList(){
       qaList.innerHTML = "";
-
-      if (cards.length === 0) {
-        const empty = document.createElement("div");
-        empty.className = "tiny";
-        empty.textContent = "Lisa vähemalt 3 küsimust, et mäng oleks fun.";
+      if(cards.length === 0){
+        const empty=document.createElement("div");
+        empty.className="tiny";
+        empty.textContent="Lisa vähemalt 3 küsimust, et runner saaks 3 rada täita.";
         qaList.appendChild(empty);
         return;
       }
@@ -397,66 +284,41 @@
         a.querySelector(".val").textContent = c.a;
 
         const actions = document.createElement("div");
-        actions.style.display = "flex";
-        actions.style.gap = "8px";
-        actions.style.alignItems = "center";
-        actions.style.justifyContent = "flex-end";
+        actions.style.display="flex";
+        actions.style.gap="8px";
+        actions.style.alignItems="center";
+        actions.style.justifyContent="flex-end";
 
-        const up = document.createElement("button");
-        up.textContent = "↑";
-        up.title = "Üles";
-        up.onclick = () => {
-          if (idx === 0) return;
-          [cards[idx - 1], cards[idx]] = [cards[idx], cards[idx - 1]];
-          renderList();
-        };
+        const up=document.createElement("button");
+        up.textContent="↑";
+        up.onclick=()=>{ if(idx===0) return; [cards[idx-1],cards[idx]]=[cards[idx],cards[idx-1]]; renderList(); };
 
-        const down = document.createElement("button");
-        down.textContent = "↓";
-        down.title = "Alla";
-        down.onclick = () => {
-          if (idx === cards.length - 1) return;
-          [cards[idx + 1], cards[idx]] = [cards[idx], cards[idx + 1]];
-          renderList();
-        };
+        const down=document.createElement("button");
+        down.textContent="↓";
+        down.onclick=()=>{ if(idx===cards.length-1) return; [cards[idx+1],cards[idx]]=[cards[idx],cards[idx+1]]; renderList(); };
 
-        const del = document.createElement("button");
-        del.textContent = "X";
-        del.title = "Kustuta";
-        del.className = "btn-bad";
-        del.onclick = () => {
-          cards.splice(idx, 1);
-          renderList();
-        };
+        const del=document.createElement("button");
+        del.textContent="X"; del.className="btn-bad";
+        del.onclick=()=>{ cards.splice(idx,1); renderList(); };
 
-        actions.appendChild(up);
-        actions.appendChild(down);
-        actions.appendChild(del);
+        actions.appendChild(up); actions.appendChild(down); actions.appendChild(del);
 
-        item.appendChild(q);
-        item.appendChild(a);
-        item.appendChild(actions);
-
+        item.appendChild(q); item.appendChild(a); item.appendChild(actions);
         qaList.appendChild(item);
       });
     }
 
-    // -------------------------
-    // Builder actions
-    // -------------------------
-    function addCard() {
-      const q = (qInput.value || "").trim();
-      const a = (aInput.value || "").trim();
-      if (!q || !a) return;
-
-      cards.push({ q, a });
-      qInput.value = "";
-      aInput.value = "";
+    function addCard(){
+      const q=(qInput.value||"").trim();
+      const a=(aInput.value||"").trim();
+      if(!q || !a) return;
+      cards.push({q,a});
+      qInput.value=""; aInput.value="";
       qInput.focus();
       renderList();
     }
 
-    function saveDeck() {
+    function saveDeck(){
       syncDeckName();
       const decks = readAllDecks();
       decks[deckName] = { name: deckName, cards };
@@ -464,24 +326,14 @@
       toastMsg(`Salvestatud: "${deckName}" (${cards.length} kaarti)`);
     }
 
-    function loadDeck() {
+    function loadDeck(){
       const decks = readAllDecks();
       const names = Object.keys(decks);
-      if (names.length === 0) {
-        alert("Sul pole veel salvestatud pakke.");
-        return;
-      }
+      if(names.length===0){ alert("Sul pole veel salvestatud pakke."); return; }
 
-      const pick = prompt(
-        "Sisesta paki nimi, mida laadida:\n\n" + names.join("\n"),
-        deckName
-      );
-
-      if (!pick) return;
-      if (!decks[pick]) {
-        alert("Sellist pakki ei leitud.");
-        return;
-      }
+      const pick = prompt("Sisesta paki nimi, mida laadida:\n\n"+names.join("\n"), deckName);
+      if(!pick) return;
+      if(!decks[pick]){ alert("Sellist pakki ei leitud."); return; }
 
       deckNameInput.value = decks[pick].name;
       cards = decks[pick].cards || [];
@@ -490,220 +342,391 @@
       toastMsg(`Laetud: "${pick}"`);
     }
 
-    function deleteDeck() {
+    function deleteDeck(){
       const decks = readAllDecks();
-      if (!decks[deckName]) {
-        alert("Seda pakki ei ole salvestatud.");
-        return;
-      }
-      const ok = confirm(`Kustuta pakk "${deckName}"?`);
-      if (!ok) return;
-
+      if(!decks[deckName]){ alert("Seda pakki ei ole salvestatud."); return; }
+      if(!confirm(`Kustuta pakk "${deckName}"?`)) return;
       delete decks[deckName];
       writeAllDecks(decks);
       toastMsg(`Kustutatud: "${deckName}"`);
     }
 
-    function exportDeck() {
+    function exportDeck(){
       syncDeckName();
       const lines = cards.map(c => `${c.q} | ${c.a}`).join("\n");
-      const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
+      const blob = new Blob([lines], { type:"text/plain;charset=utf-8" });
       const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${deckName.replaceAll(" ", "_")}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
+      const a=document.createElement("a");
+      a.href=url; a.download=`${deckName.replaceAll(" ","_")}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
       toastMsg("Eksporditud .txt failina.");
     }
 
-    function importDeck() {
+    function importDeck(){
       const txt = prompt(
-        "Kleebi siia oma read formaadis: küsimus | vastus\n\nNäide:\nTCP | usaldusväärne transpordikiht\nDNS | nime lahendamine IP-ks"
+        "Kleebi read formaadis: küsimus | vastus\n\nNäide:\nTCP | usaldusväärne transpordikiht\nDNS | nime lahendamine IP-ks"
       );
-      if (!txt) return;
-
-      const lines = txt.split("\n").map(l => l.trim()).filter(Boolean);
-      let added = 0;
-
-      for (const line of lines) {
-        const parts = line.split("|");
-        if (parts.length < 2) continue;
-        const q = parts[0].trim();
-        const a = parts.slice(1).join("|").trim();
-        if (!q || !a) continue;
-        cards.push({ q, a });
-        added++;
+      if(!txt) return;
+      const lines = txt.split("\n").map(l=>l.trim()).filter(Boolean);
+      let added=0;
+      for(const line of lines){
+        const parts=line.split("|");
+        if(parts.length<2) continue;
+        const q=parts[0].trim();
+        const a=parts.slice(1).join("|").trim();
+        if(!q||!a) continue;
+        cards.push({q,a}); added++;
       }
-
       renderList();
       toastMsg(`Imporditud: ${added} kaarti.`);
     }
 
     // -------------------------
-    // Game logic
+    // Runner Game
     // -------------------------
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
+    let game = null;
+    let rafId = null;
 
-    function startGame() {
-      if (cards.length < 3) {
-        alert("Mänguks lisa vähemalt 3 kaarti (et saaks 3 valikvastust teha).");
+    function startGame(){
+      if(cards.length < 3){
+        alert("Runner vajab vähemalt 3 kaarti (et 3 rada täita).");
         return;
       }
 
       builderCard.classList.add("hidden");
       gameCard.classList.remove("hidden");
 
-      const order = shuffle([...cards.keys()]); // indices
+      const order = shuffle([...cards.keys()]);
       game = {
         hp: 3,
         score: 0,
         streak: 0,
         order,
-        idx: 0,
-        locked: false,
-        total: order.length
+        i: 0,           // question index in order
+        done: 0,
+        total: order.length,
+
+        // runner
+        lane: 1,        // 0..2
+        speed: 220,     // px/s (gate speed)
+        gateY: -120,    // starts above
+        playerY: canvas.height - 60,
+
+        // current question config
+        q: "",
+        choices: ["","",""],
+        correctLane: 1,
+
+        state: "playing", // playing | over
+        flash: 0
       };
 
+      // Fit canvas "real size" to match CSS width (keeps crispness)
+      resizeCanvas();
+      makeNextGate();
       renderHUD();
-      loadQuestion();
-      toast.textContent = "Vali õige vastus 👇";
+      toastMsg("Liigu õigesse ritta enne väravat!", null);
+
+      window.addEventListener("keydown", onKeyDown);
+      rafId = requestAnimationFrame(loop);
     }
 
-    function renderHUD() {
-      hpLabel.textContent = game.hp;
-      scoreLabel.textContent = game.score;
-      streakLabel.textContent = game.streak;
+    function resizeCanvas(){
+      // keep internal resolution proportional to CSS width for crispness
+      const cssW = canvas.getBoundingClientRect().width;
+      const cssH = canvas.getBoundingClientRect().height;
+      const scale = window.devicePixelRatio || 1;
 
-      const pct = Math.round((game.idx / game.total) * 100);
-      progressFill.style.width = pct + "%";
+      canvas.width = Math.floor(cssW * scale);
+      canvas.height = Math.floor(cssH * scale);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
     }
 
-    function makeChoices(correctAnswer) {
-      // get 2 random wrong answers
-      const answers = cards.map(c => c.a);
-      const wrongPool = answers.filter(a => a !== correctAnswer);
+    window.addEventListener("resize", () => {
+      if(!game) return;
+      resizeCanvas();
+    });
+
+    function makeChoices(correctAnswer){
+      const allAnswers = cards.map(c=>c.a);
+      const wrongPool = allAnswers.filter(a => a !== correctAnswer);
       shuffle(wrongPool);
 
       const choices = [correctAnswer, wrongPool[0], wrongPool[1]];
       return shuffle(choices);
     }
 
-    function loadQuestion() {
-      game.locked = false;
-      choicesEl.innerHTML = "";
-      toast.textContent = "";
-
-      if (game.idx >= game.order.length) {
-        endGame(true);
+    function makeNextGate(){
+      if(game.i >= game.order.length){
+        // won
+        game.state = "over";
+        questionText.textContent = "🎉 Läbi!";
+        laneChoicesEl.innerHTML = "";
+        toast.innerHTML = `Sa said kõik läbi! <span class="tiny">Score: <b>${game.score}</b></span>`;
+        progressFill.style.width = "100%";
         return;
       }
 
-      const card = cards[game.order[game.idx]];
-      questionText.textContent = card.q;
-
+      const card = cards[game.order[game.i]];
       const choices = makeChoices(card.a);
+      const correctLane = choices.indexOf(card.a);
 
-      choices.forEach(choiceText => {
-        const btn = document.createElement("button");
-        btn.className = "choice";
-        btn.textContent = choiceText;
-        btn.onclick = () => answer(choiceText, card.a, btn);
-        choicesEl.appendChild(btn);
+      game.q = card.q;
+      game.choices = choices;
+      game.correctLane = correctLane;
+      game.gateY = -120;
+
+      questionText.textContent = game.q;
+
+      // Render lane buttons (click to move into lane)
+      laneChoicesEl.innerHTML = "";
+      choices.forEach((txt, idx) => {
+        const b = document.createElement("button");
+        b.className = "lane-btn";
+        b.textContent = txt;
+        b.onclick = () => { game.lane = idx; renderLaneButtons(); };
+        laneChoicesEl.appendChild(b);
       });
-
+      renderLaneButtons();
       renderHUD();
     }
 
-    function answer(picked, correct, btn) {
-      if (game.locked) return;
-      game.locked = true;
+    function renderLaneButtons(){
+      [...laneChoicesEl.children].forEach((btn, idx) => {
+        btn.classList.toggle("active", idx === game.lane);
+      });
+    }
 
-      const all = [...choicesEl.querySelectorAll("button")];
-      all.forEach(b => b.disabled = true);
+    function onKeyDown(e){
+      if(!game) return;
+      if(game.state !== "playing") return;
+      const k = e.key.toLowerCase();
+      if(k === "arrowleft" || k === "a"){
+        game.lane = clamp(game.lane - 1, 0, 2);
+        renderLaneButtons();
+      }
+      if(k === "arrowright" || k === "d"){
+        game.lane = clamp(game.lane + 1, 0, 2);
+        renderLaneButtons();
+      }
+    }
 
-      if (picked === correct) {
-        btn.classList.add("good");
-        game.score += 10 + Math.min(game.streak * 2, 10);
-        game.streak += 1;
-        toastMsg("Õige ✅ +score", true);
-      } else {
-        btn.classList.add("bad");
-        // highlight correct
-        const correctBtn = all.find(b => b.textContent === correct);
-        if (correctBtn) correctBtn.classList.add("good");
+    function renderHUD(){
+      hpLabel.textContent = game.hp;
+      scoreLabel.textContent = game.score;
+      streakLabel.textContent = game.streak;
 
-        game.hp -= 1;
-        game.streak = 0;
-        toastMsg("Vale ❌ -HP", false);
+      const pct = Math.round((game.done / game.total) * 100);
+      progressFill.style.width = pct + "%";
+    }
 
-        if (game.hp <= 0) {
-          endGame(false);
-          return;
+    function failGate(){
+      game.hp -= 1;
+      game.streak = 0;
+      game.flash = 0.25; // seconds
+      toastMsg("Vale rida ❌ -HP", false);
+      renderHUD();
+
+      if(game.hp <= 0){
+        game.state = "over";
+        questionText.textContent = "💀 Game over";
+        laneChoicesEl.innerHTML = "";
+        toast.innerHTML = `HP sai otsa. <span class="tiny">Score: <b>${game.score}</b> • Läbi: <b>${game.done}</b> / ${game.total}</span>`;
+        progressFill.style.width = Math.round((game.done / game.total) * 100) + "%";
+      }
+    }
+
+    function passGate(){
+      game.score += 10 + Math.min(game.streak * 2, 10);
+      game.streak += 1;
+      game.done += 1;
+      toastMsg("Õige rida ✅ +score", true);
+      renderHUD();
+
+      game.i += 1;
+      makeNextGate();
+    }
+
+    let lastT = null;
+    function loop(t){
+      if(!game){ return; }
+      if(!lastT) lastT = t;
+      const dt = Math.min(0.033, (t - lastT) / 1000);
+      lastT = t;
+
+      if(game.flash > 0) game.flash = Math.max(0, game.flash - dt);
+
+      if(game.state === "playing"){
+        game.gateY += game.speed * dt;
+
+        // When gate reaches player: evaluate
+        const hitLine = game.playerY - 10;
+        if(game.gateY >= hitLine){
+          if(game.lane === game.correctLane){
+            passGate();
+          }else{
+            failGate();
+            // still advance to next gate (if not game over)
+            if(game.state === "playing"){
+              game.i += 1;
+              makeNextGate();
+            }
+          }
         }
       }
 
-      renderHUD();
+      draw();
+      rafId = requestAnimationFrame(loop);
     }
 
-    function nextQuestion() {
-      if (!game) return;
-      if (!game.locked) {
-        toastMsg("Vali enne vastus 🙂");
-        return;
+    function draw(){
+      // canvas is scaled via setTransform, so use CSS pixels
+      const w = canvas.getBoundingClientRect().width;
+      const h = canvas.getBoundingClientRect().height;
+
+      // Background
+      ctx.clearRect(0,0,w,h);
+
+      // Flash red on mistake
+      if(game && game.flash > 0){
+        ctx.fillStyle = `rgba(255, 92, 122, ${0.22 * (game.flash/0.25)})`;
+        ctx.fillRect(0,0,w,h);
       }
-      game.idx += 1;
-      loadQuestion();
+
+      // Lanes
+      const padding = 28;
+      const roadW = w - padding*2;
+      const laneW = roadW / 3;
+      const roadX = padding;
+      const roadY = 14;
+      const roadH = h - 28;
+
+      // road
+      ctx.fillStyle = "rgba(0,0,0,0.22)";
+      ctx.fillRect(roadX, roadY, roadW, roadH);
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(roadX, roadY, roadW, roadH);
+
+      // lane lines
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      for(let i=1;i<=2;i++){
+        const x = roadX + laneW*i;
+        ctx.beginPath();
+        ctx.moveTo(x, roadY);
+        ctx.lineTo(x, roadY+roadH);
+        ctx.stroke();
+      }
+
+      // moving stripes (simple speed feel)
+      if(game){
+        const stripeGap = 28;
+        const stripeLen = 14;
+        const offset = (game.gateY * 0.5) % stripeGap;
+        ctx.strokeStyle = "rgba(122,162,255,0.18)";
+        ctx.lineWidth = 2;
+        for(let y = roadY + stripeGap - offset; y < roadY+roadH; y += stripeGap){
+          // draw in each lane center
+          for(let lane=0; lane<3; lane++){
+            const cx = roadX + laneW*lane + laneW/2;
+            ctx.beginPath();
+            ctx.moveTo(cx, y);
+            ctx.lineTo(cx, y + stripeLen);
+            ctx.stroke();
+          }
+        }
+      }
+
+      if(!game) return;
+
+      // Gate (3 blocks, opening on correctLane)
+      const gateY = game.gateY;
+      const gateH = 38;
+      const gatePad = 8;
+
+      for(let lane=0; lane<3; lane++){
+        const x = roadX + laneW*lane + gatePad;
+        const y = gateY;
+        const bw = laneW - gatePad*2;
+        const bh = gateH;
+
+        if(lane === game.correctLane){
+          // opening (draw glow frame)
+          ctx.strokeStyle = "rgba(46,204,113,0.55)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, bw, bh);
+        }else{
+          ctx.fillStyle = "rgba(255,255,255,0.12)";
+          ctx.fillRect(x, y, bw, bh);
+          ctx.strokeStyle = "rgba(255,255,255,0.18)";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, bw, bh);
+        }
+      }
+
+      // Answers labels at top (in lanes)
+      ctx.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillStyle = "rgba(233,238,255,0.90)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for(let lane=0; lane<3; lane++){
+        const cx = roadX + laneW*lane + laneW/2;
+        const label = game.choices[lane] || "";
+        ctx.fillText(trimText(label, 22), cx, roadY + 6);
+      }
+
+      // Player
+      const playerW = laneW * 0.45;
+      const playerH = 26;
+      const px = roadX + laneW*game.lane + (laneW - playerW)/2;
+      const py = game.playerY;
+
+      ctx.fillStyle = "rgba(122,162,255,0.85)";
+      ctx.fillRect(px, py, playerW, playerH);
+      ctx.strokeStyle = "rgba(122,162,255,0.95)";
+      ctx.strokeRect(px, py, playerW, playerH);
+
+      // HP hint if low
+      if(game.hp === 1){
+        ctx.fillStyle = "rgba(255,92,122,0.22)";
+        ctx.fillRect(roadX, roadY, roadW, roadH);
+      }
     }
 
-    function endGame(won) {
-      choicesEl.innerHTML = "";
-      questionText.textContent = won ? "🎉 Läbi!" : "💀 Game over";
-      toast.innerHTML = `
-        ${won ? "Sa said kõik läbi!" : "HP sai otsa."}
-        <br><span class="tiny">Score: <b>${game.score}</b> • Küsimusi tehtud: <b>${game.idx}</b> / ${game.total}</span>
-      `;
-      progressFill.style.width = "100%";
-      game.locked = true;
+    function trimText(s, max){
+      if(s.length <= max) return s;
+      return s.slice(0, max-1) + "…";
     }
 
-    function quitGame() {
+    function quitGame(){
+      if(rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      lastT = null;
+
+      window.removeEventListener("keydown", onKeyDown);
       game = null;
+
       gameCard.classList.add("hidden");
       builderCard.classList.remove("hidden");
       toast.textContent = "";
     }
 
-    function toastMsg(msg, good = null) {
+    function toastMsg(msg, good=null){
       toast.textContent = msg;
-      toast.style.color = (good === true) ? "rgba(46, 204, 113, 0.95)"
-        : (good === false) ? "rgba(255, 92, 122, 0.95)"
-        : "var(--muted)";
-      // reset after a bit
-      setTimeout(() => {
-        toast.style.color = "var(--muted)";
-      }, 900);
+      toast.style.color =
+        (good === true) ? "rgba(46, 204, 113, 0.95)" :
+        (good === false) ? "rgba(255, 92, 122, 0.95)" :
+        "var(--muted)";
+      setTimeout(()=>{ toast.style.color="var(--muted)"; }, 900);
     }
 
     // -------------------------
     // Events
     // -------------------------
     deckNameInput.addEventListener("input", syncDeckName);
-
     addBtn.addEventListener("click", addCard);
-    aInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") addCard();
-    });
+    aInput.addEventListener("keydown", (e)=>{ if(e.key==="Enter") addCard(); });
 
     saveDeckBtn.addEventListener("click", saveDeck);
     loadDeckBtn.addEventListener("click", loadDeck);
@@ -713,7 +736,6 @@
     importBtn.addEventListener("click", importDeck);
 
     startGameBtn.addEventListener("click", startGame);
-    nextBtn.addEventListener("click", nextQuestion);
     quitBtn.addEventListener("click", quitGame);
 
     // init
