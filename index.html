@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Õpimäng (Quizlet + game)</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #111a33;
+      --muted: #9fb0d0;
+      --text: #e9eeff;
+      --accent: #7aa2ff;
+      --good: #2ecc71;
+      --bad: #ff5c7a;
+      --line: rgba(255,255,255,0.10);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, #18234a 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+
+    header {
+      padding: 20px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 6px 0;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .grid {
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: start;
+      }
+    }
+
+    .card {
+      background: rgba(17, 26, 51, 0.75);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 10px;
+      outline: none;
+    }
+
+    textarea { min-height: 80px; resize: vertical; }
+
+    button {
+      background: rgba(122, 162, 255, 0.15);
+      border: 1px solid rgba(122, 162, 255, 0.35);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+
+    .btn-good {
+      background: rgba(46, 204, 113, 0.14);
+      border-color: rgba(46, 204, 113, 0.35);
+    }
+    .btn-bad {
+      background: rgba(255, 92, 122, 0.12);
+      border-color: rgba(255, 92, 122, 0.35);
+    }
+
+    .tiny {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.18);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .list {
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .qa-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: rgba(0,0,0,0.18);
+    }
+    .qa-item b { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .qa-item .val { white-space: pre-wrap; }
+
+    .game-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .bar {
+      height: 10px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    .bar > div {
+      height: 100%;
+      width: 0%;
+      background: rgba(122, 162, 255, 0.9);
+      transition: width 250ms ease;
+    }
+
+    .game-area {
+      margin-top: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.30));
+      padding: 14px;
+    }
+
+    .question {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 10px 0;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .choice {
+      text-align: left;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .choice.good { border-color: rgba(46, 204, 113, 0.55); background: rgba(46, 204, 113, 0.12); }
+    .choice.bad  { border-color: rgba(255, 92, 122, 0.55); background: rgba(255, 92, 122, 0.10); }
+
+    .hidden { display: none !important; }
+
+    .toast {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.20);
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Õpimäng (Quizlet + mini-mäng)</h1>
+      <p class="sub">Lisa oma küsimused/vastused → salvesta → mängi. Kõik jääb sinu brauserisse (localStorage).</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+
+      <!-- BUILDER -->
+      <section class="card" id="builderCard">
+        <div class="game-top">
+          <div>
+            <div class="pill">📦 Pakk: <span id="deckNameLabel">Minu pakk</span></div>
+          </div>
+          <div class="toolbar">
+            <input id="deckName" type="text" placeholder="Paki nimi (nt 'Võrgud KT')" value="Minu pakk" />
+            <button class="btn-good" id="saveDeckBtn">Salvesta</button>
+            <button id="loadDeckBtn">Laadi</button>
+            <button class="btn-bad" id="deleteDeckBtn">Kustuta pakk</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <input id="qInput" placeholder="Küsimus / termin" />
+          <input id="aInput" placeholder="Vastus / definitsioon" />
+          <button id="addBtn">Lisa</button>
+        </div>
+
+        <p class="tiny" style="margin:10px 0 0 0;">
+          Tipp: vajuta <span class="kbd">Enter</span> vastuse kastis, et kiiresti lisada.
+        </p>
+
+        <div class="list" id="qaList"></div>
+
+        <div class="toolbar">
+          <button id="importBtn">Impordi (Q|A)</button>
+          <button id="exportBtn">Ekspordi</button>
+          <button class="btn-good" id="startGameBtn">Mängi</button>
+        </div>
+
+        <p class="tiny">
+          Importi formaat: iga rida on <span class="kbd">küsimus | vastus</span>
+        </p>
+      </section>
+
+      <!-- GAME -->
+      <section class="card hidden" id="gameCard">
+        <div class="game-top">
+          <div class="pill">❤️ HP: <span id="hpLabel">3</span></div>
+          <div class="pill">⭐ Score: <span id="scoreLabel">0</span></div>
+          <div class="pill">✅ Õige järjest: <span id="streakLabel">0</span></div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="tiny" style="margin-bottom:6px;">Progress</div>
+          <div class="bar"><div id="progressFill"></div></div>
+        </div>
+
+        <div class="game-area">
+          <p class="question" id="questionText">Küsimus siia…</p>
+          <div class="choices" id="choices"></div>
+          <div class="toast" id="toast"></div>
+        </div>
+
+        <div class="toolbar">
+          <button id="nextBtn">Järgmine</button>
+          <button class="btn-bad" id="quitBtn">Välju</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    // -------------------------
+    // Storage helpers
+    // -------------------------
+    const STORAGE_KEY = "opimang_decks_v1";
+
+    function readAllDecks() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function writeAllDecks(decks) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
+    }
+
+    // -------------------------
+    // State
+    // -------------------------
+    let deckName = "Minu pakk";
+    let cards = []; // {q, a}
+    let game = null;
+
+    // -------------------------
+    // DOM
+    // -------------------------
+    const deckNameInput = document.getElementById("deckName");
+    const deckNameLabel = document.getElementById("deckNameLabel");
+    const qInput = document.getElementById("qInput");
+    const aInput = document.getElementById("aInput");
+    const qaList = document.getElementById("qaList");
+
+    const saveDeckBtn = document.getElementById("saveDeckBtn");
+    const loadDeckBtn = document.getElementById("loadDeckBtn");
+    const deleteDeckBtn = document.getElementById("deleteDeckBtn");
+    const addBtn = document.getElementById("addBtn");
+    const importBtn = document.getElementById("importBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const startGameBtn = document.getElementById("startGameBtn");
+
+    const builderCard = document.getElementById("builderCard");
+    const gameCard = document.getElementById("gameCard");
+
+    const hpLabel = document.getElementById("hpLabel");
+    const scoreLabel = document.getElementById("scoreLabel");
+    const streakLabel = document.getElementById("streakLabel");
+    const progressFill = document.getElementById("progressFill");
+
+    const questionText = document.getElementById("questionText");
+    const choicesEl = document.getElementById("choices");
+    const toast = document.getElementById("toast");
+    const nextBtn = document.getElementById("nextBtn");
+    const quitBtn = document.getElementById("quitBtn");
+
+    // -------------------------
+    // UI render
+    // -------------------------
+    function syncDeckName() {
+      deckName = (deckNameInput.value || "Minu pakk").trim();
+      deckNameLabel.textContent = deckName;
+    }
+
+    function renderList() {
+      qaList.innerHTML = "";
+
+      if (cards.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "tiny";
+        empty.textContent = "Lisa vähemalt 3 küsimust, et mäng oleks fun.";
+        qaList.appendChild(empty);
+        return;
+      }
+
+      cards.forEach((c, idx) => {
+        const item = document.createElement("div");
+        item.className = "qa-item";
+
+        const q = document.createElement("div");
+        q.innerHTML = `<b>Küsimus</b><div class="val"></div>`;
+        q.querySelector(".val").textContent = c.q;
+
+        const a = document.createElement("div");
+        a.innerHTML = `<b>Vastus</b><div class="val"></div>`;
+        a.querySelector(".val").textContent = c.a;
+
+        const actions = document.createElement("div");
+        actions.style.display = "flex";
+        actions.style.gap = "8px";
+        actions.style.alignItems = "center";
+        actions.style.justifyContent = "flex-end";
+
+        const up = document.createElement("button");
+        up.textContent = "↑";
+        up.title = "Üles";
+        up.onclick = () => {
+          if (idx === 0) return;
+          [cards[idx - 1], cards[idx]] = [cards[idx], cards[idx - 1]];
+          renderList();
+        };
+
+        const down = document.createElement("button");
+        down.textContent = "↓";
+        down.title = "Alla";
+        down.onclick = () => {
+          if (idx === cards.length - 1) return;
+          [cards[idx + 1], cards[idx]] = [cards[idx], cards[idx + 1]];
+          renderList();
+        };
+
+        const del = document.createElement("button");
+        del.textContent = "X";
+        del.title = "Kustuta";
+        del.className = "btn-bad";
+        del.onclick = () => {
+          cards.splice(idx, 1);
+          renderList();
+        };
+
+        actions.appendChild(up);
+        actions.appendChild(down);
+        actions.appendChild(del);
+
+        item.appendChild(q);
+        item.appendChild(a);
+        item.appendChild(actions);
+
+        qaList.appendChild(item);
+      });
+    }
+
+    // -------------------------
+    // Builder actions
+    // -------------------------
+    function addCard() {
+      const q = (qInput.value || "").trim();
+      const a = (aInput.value || "").trim();
+      if (!q || !a) return;
+
+      cards.push({ q, a });
+      qInput.value = "";
+      aInput.value = "";
+      qInput.focus();
+      renderList();
+    }
+
+    function saveDeck() {
+      syncDeckName();
+      const decks = readAllDecks();
+      decks[deckName] = { name: deckName, cards };
+      writeAllDecks(decks);
+      toastMsg(`Salvestatud: "${deckName}" (${cards.length} kaarti)`);
+    }
+
+    function loadDeck() {
+      const decks = readAllDecks();
+      const names = Object.keys(decks);
+      if (names.length === 0) {
+        alert("Sul pole veel salvestatud pakke.");
+        return;
+      }
+
+      const pick = prompt(
+        "Sisesta paki nimi, mida laadida:\n\n" + names.join("\n"),
+        deckName
+      );
+
+      if (!pick) return;
+      if (!decks[pick]) {
+        alert("Sellist pakki ei leitud.");
+        return;
+      }
+
+      deckNameInput.value = decks[pick].name;
+      cards = decks[pick].cards || [];
+      syncDeckName();
+      renderList();
+      toastMsg(`Laetud: "${pick}"`);
+    }
+
+    function deleteDeck() {
+      const decks = readAllDecks();
+      if (!decks[deckName]) {
+        alert("Seda pakki ei ole salvestatud.");
+        return;
+      }
+      const ok = confirm(`Kustuta pakk "${deckName}"?`);
+      if (!ok) return;
+
+      delete decks[deckName];
+      writeAllDecks(decks);
+      toastMsg(`Kustutatud: "${deckName}"`);
+    }
+
+    function exportDeck() {
+      syncDeckName();
+      const lines = cards.map(c => `${c.q} | ${c.a}`).join("\n");
+      const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${deckName.replaceAll(" ", "_")}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      toastMsg("Eksporditud .txt failina.");
+    }
+
+    function importDeck() {
+      const txt = prompt(
+        "Kleebi siia oma read formaadis: küsimus | vastus\n\nNäide:\nTCP | usaldusväärne transpordikiht\nDNS | nime lahendamine IP-ks"
+      );
+      if (!txt) return;
+
+      const lines = txt.split("\n").map(l => l.trim()).filter(Boolean);
+      let added = 0;
+
+      for (const line of lines) {
+        const parts = line.split("|");
+        if (parts.length < 2) continue;
+        const q = parts[0].trim();
+        const a = parts.slice(1).join("|").trim();
+        if (!q || !a) continue;
+        cards.push({ q, a });
+        added++;
+      }
+
+      renderList();
+      toastMsg(`Imporditud: ${added} kaarti.`);
+    }
+
+    // -------------------------
+    // Game logic
+    // -------------------------
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startGame() {
+      if (cards.length < 3) {
+        alert("Mänguks lisa vähemalt 3 kaarti (et saaks 3 valikvastust teha).");
+        return;
+      }
+
+      builderCard.classList.add("hidden");
+      gameCard.classList.remove("hidden");
+
+      const order = shuffle([...cards.keys()]); // indices
+      game = {
+        hp: 3,
+        score: 0,
+        streak: 0,
+        order,
+        idx: 0,
+        locked: false,
+        total: order.length
+      };
+
+      renderHUD();
+      loadQuestion();
+      toast.textContent = "Vali õige vastus 👇";
+    }
+
+    function renderHUD() {
+      hpLabel.textContent = game.hp;
+      scoreLabel.textContent = game.score;
+      streakLabel.textContent = game.streak;
+
+      const pct = Math.round((game.idx / game.total) * 100);
+      progressFill.style.width = pct + "%";
+    }
+
+    function makeChoices(correctAnswer) {
+      // get 2 random wrong answers
+      const answers = cards.map(c => c.a);
+      const wrongPool = answers.filter(a => a !== correctAnswer);
+      shuffle(wrongPool);
+
+      const choices = [correctAnswer, wrongPool[0], wrongPool[1]];
+      return shuffle(choices);
+    }
+
+    function loadQuestion() {
+      game.locked = false;
+      choicesEl.innerHTML = "";
+      toast.textContent = "";
+
+      if (game.idx >= game.order.length) {
+        endGame(true);
+        return;
+      }
+
+      const card = cards[game.order[game.idx]];
+      questionText.textContent = card.q;
+
+      const choices = makeChoices(card.a);
+
+      choices.forEach(choiceText => {
+        const btn = document.createElement("button");
+        btn.className = "choice";
+        btn.textContent = choiceText;
+        btn.onclick = () => answer(choiceText, card.a, btn);
+        choicesEl.appendChild(btn);
+      });
+
+      renderHUD();
+    }
+
+    function answer(picked, correct, btn) {
+      if (game.locked) return;
+      game.locked = true;
+
+      const all = [...choicesEl.querySelectorAll("button")];
+      all.forEach(b => b.disabled = true);
+
+      if (picked === correct) {
+        btn.classList.add("good");
+        game.score += 10 + Math.min(game.streak * 2, 10);
+        game.streak += 1;
+        toastMsg("Õige ✅ +score", true);
+      } else {
+        btn.classList.add("bad");
+        // highlight correct
+        const correctBtn = all.find(b => b.textContent === correct);
+        if (correctBtn) correctBtn.classList.add("good");
+
+        game.hp -= 1;
+        game.streak = 0;
+        toastMsg("Vale ❌ -HP", false);
+
+        if (game.hp <= 0) {
+          endGame(false);
+          return;
+        }
+      }
+
+      renderHUD();
+    }
+
+    function nextQuestion() {
+      if (!game) return;
+      if (!game.locked) {
+        toastMsg("Vali enne vastus 🙂");
+        return;
+      }
+      game.idx += 1;
+      loadQuestion();
+    }
+
+    function endGame(won) {
+      choicesEl.innerHTML = "";
+      questionText.textContent = won ? "🎉 Läbi!" : "💀 Game over";
+      toast.innerHTML = `
+        ${won ? "Sa said kõik läbi!" : "HP sai otsa."}
+        <br><span class="tiny">Score: <b>${game.score}</b> • Küsimusi tehtud: <b>${game.idx}</b> / ${game.total}</span>
+      `;
+      progressFill.style.width = "100%";
+      game.locked = true;
+    }
+
+    function quitGame() {
+      game = null;
+      gameCard.classList.add("hidden");
+      builderCard.classList.remove("hidden");
+      toast.textContent = "";
+    }
+
+    function toastMsg(msg, good = null) {
+      toast.textContent = msg;
+      toast.style.color = (good === true) ? "rgba(46, 204, 113, 0.95)"
+        : (good === false) ? "rgba(255, 92, 122, 0.95)"
+        : "var(--muted)";
+      // reset after a bit
+      setTimeout(() => {
+        toast.style.color = "var(--muted)";
+      }, 900);
+    }
+
+    // -------------------------
+    // Events
+    // -------------------------
+    deckNameInput.addEventListener("input", syncDeckName);
+
+    addBtn.addEventListener("click", addCard);
+    aInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") addCard();
+    });
+
+    saveDeckBtn.addEventListener("click", saveDeck);
+    loadDeckBtn.addEventListener("click", loadDeck);
+    deleteDeckBtn.addEventListener("click", deleteDeck);
+
+    exportBtn.addEventListener("click", exportDeck);
+    importBtn.addEventListener("click", importDeck);
+
+    startGameBtn.addEventListener("click", startGame);
+    nextBtn.addEventListener("click", nextQuestion);
+    quitBtn.addEventListener("click", quitGame);
+
+    // init
+    syncDeckName();
+    renderList();
+  </script>
+</body>
+</html>
